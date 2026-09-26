@@ -1,0 +1,251 @@
+# ============================================================
+# Anorthite production trajectory
+# Matsui 1998 potential
+#
+# Material:
+#   Ca8Al16Si16O64 = 8 CaAl2Si2O8
+#
+# Runtime parameters supplied by PowerShell:
+#   seed   = thermal velocity seed
+#   runid  = unique trajectory identifier
+#   sx     = final x cell scale
+#   sy     = final y cell scale
+#   sz     = final z cell scale
+#
+# Example:
+# lmp -var seed 10001 -var runid test001 \
+#     -var sx 0.99 -var sy 0.99 -var sz 0.99 \
+#     -in in.anorthite_production
+# ============================================================
+
+clear
+
+# ------------------------------------------------------------
+# Runtime parameters
+# ------------------------------------------------------------
+
+variable seed  index 492845
+variable runid index test
+variable sx    index 0.99
+variable sy    index 0.99
+variable sz    index 0.99
+
+units metal
+atom_style charge
+boundary p p p
+
+# ------------------------------------------------------------
+# Read correctly remapped anorthite structure
+#
+# Type mapping:
+#   1 = Ca
+#   2 = Mg
+#   3 = Al
+#   4 = Si
+#   5 = O
+# ------------------------------------------------------------
+
+read_data data.Anorthite.matsui
+
+# ------------------------------------------------------------
+# Masses
+# ------------------------------------------------------------
+
+mass 1 40.08
+mass 2 24.31
+mass 3 26.98
+mass 4 28.09
+mass 5 16.00
+
+# ------------------------------------------------------------
+# Charges
+# ------------------------------------------------------------
+
+set type 1 charge 0.9450
+set type 2 charge 0.9450
+set type 3 charge 1.4175
+set type 4 charge 1.8900
+set type 5 charge -0.9450
+
+# ------------------------------------------------------------
+# Matsui 1998 potential
+# ------------------------------------------------------------
+
+pair_style born/coul/long 12.0
+
+pair_coeff 1 1 0.003469071552 0.08  2.344  20.9873025     0.0
+pair_coeff 1 2 0.003469071552 0.08  2.066  13.548469725   0.0
+pair_coeff 1 3 0.0032088911856 0.074 1.9572 17.17227729    0.0
+pair_coeff 1 4 0.0027318938472 0.063 1.8924 22.99275585    0.0
+pair_coeff 1 5 0.0077186842032 0.178 2.9935 42.259099545   0.0
+
+pair_coeff 2 2 0.003469071552 0.08  1.788  8.74628990025  0.0
+pair_coeff 2 3 0.0032088911856 0.074 1.6792 11.0856590061  0.0
+pair_coeff 2 4 0.0027318938472 0.063 1.6144 14.8431012765  0.0
+pair_coeff 2 5 0.0077186842032 0.178 2.7155 27.2805964841  0.0
+
+pair_coeff 3 3 0.0029487108192 0.068 1.5704 14.0507388848  0.0
+pair_coeff 3 4 0.0024717134808 0.057 1.5056 18.8131837866  0.0
+pair_coeff 3 5 0.0074585038368 0.172 2.6067 34.5773343388  0.0
+
+pair_coeff 4 4 0.0019947161424 0.046 1.4408 25.189841409  0.0
+pair_coeff 4 5 0.0069815064984 0.161 2.5419 46.2971912793  0.0
+
+pair_coeff 5 5 0.0119682968544 0.276 3.643 85.0910446616  0.0
+
+# ------------------------------------------------------------
+# Long-range electrostatics
+# ------------------------------------------------------------
+
+kspace_style pppm 1.0e-5
+
+neighbor 1.0 bin
+neigh_modify delay 10 every 2 check yes
+
+# ============================================================
+# STEP 1: Fixed-cell force relaxation
+# ============================================================
+
+thermo 100
+
+thermo_style custom &
+    step &
+    pe &
+    etotal &
+    enthalpy &
+    vol &
+    press &
+    density
+
+min_style hftn
+
+minimize 1.0e-10 1.0e-8 100000 100000
+
+# ============================================================
+# STEP 2: Independent 300 K initialization
+# ============================================================
+
+reset_timestep 0
+timestep 0.001
+
+velocity all create 300.0 ${seed} &
+    mom yes &
+    rot yes &
+    dist gaussian
+
+# ============================================================
+# STEP 3: 300 K equilibration
+#
+# 5000 steps = 5 ps
+# ============================================================
+
+fix equil all nvt temp 300.0 300.0 0.1
+
+thermo 100
+
+thermo_style custom &
+    step &
+    time &
+    temp &
+    pe &
+    ke &
+    etotal &
+    enthalpy &
+    vol &
+    press &
+    density
+
+run 5000
+
+unfix equil
+
+# ============================================================
+# STEP 4: Controlled loading
+#
+# 5000 steps = 5 ps
+#
+# sx/sy/sz specify final cell scale.
+#
+# Examples:
+#
+# Isotropic:
+#   sx=0.99 sy=0.99 sz=0.99
+#
+# X loading:
+#   sx=0.99 sy=1.00 sz=1.00
+#
+# Y loading:
+#   sx=1.00 sy=0.99 sz=1.00
+#
+# Z loading:
+#   sx=1.00 sy=1.00 sz=0.99
+# ============================================================
+
+reset_timestep 0
+
+fix thermostat all nvt temp 300.0 300.0 0.1
+
+fix compression all deform 1 &
+    x scale ${sx} &
+    y scale ${sy} &
+    z scale ${sz} &
+    remap x
+
+# ------------------------------------------------------------
+# Atomistic trajectory output
+#
+# Every 10 steps = 0.01 ps
+#
+# Includes:
+#   ID
+#   species
+#   charge
+#   unwrapped position
+#   velocity
+#   force
+# ------------------------------------------------------------
+
+dump trajectory all custom 10 &
+    traj_${runid}.lammpstrj &
+    id type q xu yu zu vx vy vz fx fy fz
+
+dump_modify trajectory sort id
+
+thermo 10
+
+thermo_style custom &
+    step &
+    time &
+    temp &
+    pe &
+    ke &
+    etotal &
+    enthalpy &
+    vol &
+    press &
+    density
+
+run 5000
+
+# ============================================================
+# STEP 5: Cleanup / final state
+# ============================================================
+
+unfix compression
+unfix thermostat
+
+undump trajectory
+
+write_data final_${runid}.data
+write_restart restart_${runid}.restart
+
+print "============================================================"
+print "ANORTHITE PRODUCTION TRAJECTORY COMPLETE"
+print "============================================================"
+print "Run ID: ${runid}"
+print "Thermal seed: ${seed}"
+print "Final cell scales: ${sx} ${sy} ${sz}"
+print "Trajectory: traj_${runid}.lammpstrj"
+print "Final structure: final_${runid}.data"
+print "Restart: restart_${runid}.restart"
+print "============================================================"

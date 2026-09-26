@@ -1,0 +1,98 @@
+# Minimize Diopside/Anorthite using parameters of
+# M. Matsui, in:, M. H.nghnani, T. Yagi (Eds.), 
+# Properties of Earth and Planetary Materials at High Pressure and Temperature, 
+# American Geophysical Union, 1998, pp. 145–151.
+# Author: Stefan Bringuier
+# Affiliation: Dept. of Materials Science and Engineering
+# University of Arizona
+                  
+units		metal
+atom_style	charge
+boundary p p p
+
+variable mineral string Anorthite
+read_data data.${mineral}
+
+#replicate 2 2 2
+
+
+mass 1 40.08  #Ca 
+mass 2 24.31  #Mg 
+mass 3 26.98  #Al
+mass 4 28.09  #Si
+mass 5 16.00  #O
+
+#Set charges
+set type 1 charge 0.9450
+set type 2 charge 0.9450
+set type 3 charge 1.4175
+set type 4 charge 1.8900
+set type 5 charge -0.9450
+
+#Old potential, same as M. Matsui 1988 though
+# M. Matsui 1987 Goldschmit Journal
+# 1-Ca, 2-Mg, 3-Al, 4-Si, 5-O
+# pair_style born/coul/long 12.0
+# pair_coeff 1 1 0.003469 0.080000 2.344000 20.98730 0.000000
+# pair_coeff 1 2 0.003469 0.080000 2.066000 13.54869 0.000000
+# pair_coeff 1 3 0.003208 0.074000 1.957200 17.17256 0.000000
+# pair_coeff 1 4 0.002732 0.063000 1.892400 22.99314 0.000000
+# pair_coeff 1 5 0.007718 0.178000 2.993500 42.25980 0.000000
+# pair_coeff 2 2 0.003469 0.080000 1.788000 8.746435 0.000000
+# pair_coeff 2 3 0.003209 0.074000 1.679200 11.08584 0.000000 
+# pair_coeff 2 4 0.002732 0.063000 1.614400 14.84335 0.000000
+# pair_coeff 2 5 0.007719 0.178000 2.715500 27.28105 0.000000
+# pair_coeff 3 3 0.002949 0.068000 1.570400 14.05097 0.000000
+# pair_coeff 3 4 0.002472 0.057000 1.505600 18.81349 0.000000
+# pair_coeff 3 5 0.007459 0.172000 2.606700 34.57791 0.000000
+# pair_coeff 4 4 0.001995 0.046000 1.440800 25.19026 0.000000
+# pair_coeff 4 5 0.006982 0.161000 2.541900 46.29285 0.000000
+# pair_coeff 5 5 0.011968 0.276000 3.643000 85.07368 0.000000
+
+
+# M. Matsui 1998 PEPMHPT Geophysical Journal
+# 1-Ca, 2-Mg, 3-Al, 4-Si, 5-O
+pair_style born/coul/long 12.0
+pair_coeff  1   1   0.003469071552   0.08   2.344   20.9873025   0.0
+pair_coeff  1   2   0.003469071552   0.08   2.066   13.548469725   0.0
+pair_coeff  1   3   0.0032088911856   0.074   1.9572   17.17227729   0.0
+pair_coeff  1   4   0.0027318938472   0.063   1.8924   22.99275585   0.0
+pair_coeff  1   5   0.0077186842032   0.178   2.9935   42.259099545   0.0
+pair_coeff  2   2   0.003469071552   0.08   1.788   8.74628990025   0.0
+pair_coeff  2   3   0.0032088911856   0.074   1.6792   11.0856590061   0.0
+pair_coeff  2   4   0.0027318938472   0.063   1.6144   14.8431012765   0.0
+pair_coeff  2   5   0.0077186842032   0.178   2.7155   27.2805964841   0.0
+pair_coeff  3   3   0.0029487108192   0.068   1.5704   14.0507388848   0.0
+pair_coeff  3   4   0.0024717134808   0.057   1.5056   18.8131837866   0.0
+pair_coeff  3   5   0.0074585038368   0.172   2.6067   34.5773343388   0.0
+pair_coeff  4   4   0.0019947161424   0.046   1.4408   25.189841409   0.0
+pair_coeff  4   5   0.0069815064984   0.161   2.5419   46.2971912793   0.0
+pair_coeff  5   5   0.0119682968544   0.276   3.643   85.0910446616   0.0
+
+kspace_style pppm 1.0E-5
+neighbor	1.0 bin
+neigh_modify	delay 10 every 2 check yes
+
+
+dump id all atom 1000 dump.${mineral}
+thermo 1000
+thermo_style custom step evdwl ecoul epair pe etotal enthalpy vol press density 
+fix 1 all box/relax x 0.0 y 0.0 couple xy
+minimize 1.0e-10 1.0e-8 100000 100000
+min_style hftn
+
+write_data data.${mineral}-min
+
+#fix   e1 all nve/limit 0.05
+#run 10000
+#unfix e1
+
+#thermo_style custom step temp vol press density 
+#velocity all create 1 342819 dist gaussian mom yes
+#fix r2 all npt temp 1 1 1.0 z 0.0 0.0 1.0 drag 1.5 
+#run 10000
+#unfix r2
+
+
+
+
