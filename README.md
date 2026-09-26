@@ -2,7 +2,7 @@
 
 **Learning transferable nonequilibrium atomistic dynamics with state-aware equivariant graph neural networks**
 
-This project investigates whether graph neural networks can learn short-horizon nonequilibrium atomistic dynamics directly from molecular-dynamics trajectories and eventually generalize across materials, loading conditions, and material–material interactions.
+This project investigates whether graph neural networks can learn short-horizon nonequilibrium atomistic dynamics directly from molecular-dynamics trajectories and eventually generalize across materials, loading conditions, and material-material interactions.
 
 The current work begins with a controlled crystalline-material benchmark and asks three progressively deeper questions:
 
@@ -16,40 +16,40 @@ The long-term goal is an extensible framework in which raw molecular-dynamics tr
 
 ## Core idea
 
-At each timestep, an atomistic system is represented as a graph state
+At each timestep, an atomistic system is represented as a graph state:
 
-\[
+$$
 S_t =
 \left(
 Z,
-\mathbf r_t,
-\mathbf v_t,
-\mathbf F_t,
+\mathbf{r}_t,
+\mathbf{v}_t,
+\mathbf{F}_t,
 H_t,
 \text{global conditions}
-\right),
-\]
+\right)
+$$
 
-where
+where:
 
-- \(Z\) denotes atomic species,
-- \(\mathbf r_t\) denotes atomic positions,
-- \(\mathbf v_t\) denotes velocities,
-- \(\mathbf F_t\) denotes forces,
-- \(H_t\) denotes the simulation cell,
+- $Z$ denotes atomic species,
+- $\mathbf{r}_t$ denotes atomic positions,
+- $\mathbf{v}_t$ denotes velocities,
+- $\mathbf{F}_t$ denotes forces,
+- $H_t$ denotes the simulation cell,
 - and global variables can encode loading, temperature, orientation, or other experimental conditions.
 
-The model learns a transition operator
+The model learns a transition operator:
 
-\[
-S_t \rightarrow \Delta \mathbf r_t
-\]
+$$
+S_t \rightarrow \Delta \mathbf{r}_t
+$$
 
-or, in future versions,
+or, in future versions:
 
-\[
-S_t \rightarrow S_{t+\Delta t}.
-\]
+$$
+S_t \rightarrow S_{t+\Delta t}
+$$
 
 Rather than fitting an energy surface and subsequently integrating molecular dynamics, this project studies **direct prediction of dynamical evolution from trajectory data**.
 
@@ -57,9 +57,9 @@ Rather than fitting an energy surface and subsequently integrating molecular dyn
 
 # Current prototype
 
-The current benchmark uses crystalline **anorthite, CaAl\(_2\)Si\(_2\)O\(_8\)**, simulated with LAMMPS under controlled deformation.
+The current benchmark uses crystalline **anorthite, CaAl<sub>2</sub>Si<sub>2</sub>O<sub>8</sub>**, simulated with LAMMPS under controlled deformation.
 
-### Dataset
+## Dataset
 
 The first production dataset contains:
 
@@ -87,7 +87,7 @@ The test trajectories remain **sealed** while architecture and training decision
 
 This dataset currently measures:
 
-> **generalization to unseen thermal realizations under known material and loading conditions**
+> **Generalization to unseen thermal realizations under known material and loading conditions.**
 
 It does **not** yet establish generalization to unseen materials, temperatures, loading modes, strain rates, or impact conditions.
 
@@ -159,11 +159,11 @@ Species and static geometry alone provide relatively little predictive informati
 
 Velocity produces a very large improvement, and instantaneous force provides additional information.
 
-This supports the interpretation that:
+This supports the interpretation:
 
-\[
-\boxed{\text{state representation is critical for direct dynamics prediction}}
-\]
+$$
+\boxed{\text{State representation is critical for direct dynamics prediction}}
+$$
 
 ---
 
@@ -174,8 +174,8 @@ Physics-based short-horizon baselines were evaluated:
 | Method | Validation RMSE |
 |---|---:|
 | Zero displacement | 0.03406 Å |
-| Ballistic \(v\Delta t\) | 0.01967 Å |
-| Taylor / Verlet \(v\Delta t+\frac12a\Delta t^2\) | 0.01160 Å |
+| Ballistic $v\Delta t$ | 0.01967 Å |
+| Taylor / Verlet $v\Delta t + \frac{1}{2}a\Delta t^2$ | 0.01160 Å |
 | Node-only equivariant model, state C | 0.00713 Å |
 | Graph equivariant model, state C | 0.00202 Å |
 
@@ -187,17 +187,17 @@ This suggests the model is learning useful interaction-dependent information bey
 
 ## 3. Interactions matter
 
-A node-only equivariant model using species, velocity, and force reached approximately
+A node-only equivariant model using species, velocity, and force reached approximately:
 
-\[
-0.00713\ \text{Å RMSE},
-\]
+$$
+0.00713\ \text{Å RMSE}
+$$
 
-while the graph model using the same state information reached approximately
+while the graph model using the same state information reached approximately:
 
-\[
-0.00202\ \text{Å RMSE}.
-\]
+$$
+0.00202\ \text{Å RMSE}
+$$
 
 The large difference indicates that neighbor interactions contain substantial predictive information even over a short timestep.
 
@@ -207,31 +207,31 @@ The large difference indicates that neighbor interactions contain substantial pr
 
 A matched non-equivariant NNConv model produced excellent canonical-orientation accuracy:
 
-\[
-\mathrm{RMSE} \approx 0.00132\ \text{Å}.
-\]
+$$
+\mathrm{RMSE} \approx 0.00132\ \text{Å}
+$$
 
 However, rotating the same physical systems produced strong prediction inconsistency.
 
-Its mean SO(3) equivariance error was approximately
+Its mean SO(3) equivariance error was approximately:
 
-\[
-0.00303\ \text{Å},
-\]
+$$
+0.00303\ \text{Å}
+$$
 
-with approximately
+with approximately:
 
-\[
+$$
 2.38\times
-\]
+$$
 
 average degradation under rotations.
 
-The E(3)/O(3)-equivariant model instead maintained numerical equivariance at approximately
+The E(3)/O(3)-equivariant model instead maintained numerical equivariance at approximately:
 
-\[
-10^{-7}\text{--}10^{-8}\ \text{Å}.
-\]
+$$
+10^{-7}\text{--}10^{-8}\ \text{Å}
+$$
 
 This originally exposed an important tradeoff:
 
@@ -268,15 +268,15 @@ Parameters:       336,480
 
 Within a fixed 400-epoch training budget, the best validation result reached:
 
-\[
+$$
 \boxed{\mathrm{RMSE}=0.001482\ \text{Å}}
-\]
+$$
 
-with
+with:
 
-\[
-\mathrm{MAE}=0.001120\ \text{Å}.
-\]
+$$
+\mathrm{MAE}=0.001120\ \text{Å}
+$$
 
 Importantly, the best result occurred at the **400-epoch budget boundary**, so this should not yet be interpreted as a fully converged optimum.
 
@@ -292,14 +292,14 @@ The project is now focused on the following question:
 
 > **Should equivariant graph neural networks use one globally fixed geometric representation, or should geometric resolution be allocated conditionally according to the atomic environment being processed?**
 
-Standard equivariant atomistic architectures typically choose quantities such as
+Standard equivariant atomistic architectures typically choose quantities such as:
 
-- cutoff radius,
-- angular resolution,
-- hidden irreducible representations,
-- radial basis resolution,
-- message-passing depth,
-- and aggregation method
+- cutoff radius
+- angular resolution
+- hidden irreducible representations
+- radial basis resolution
+- message-passing depth
+- aggregation method
 
 globally for the entire model.
 
@@ -333,11 +333,11 @@ A key question is whether mean aggregation removes useful coordination informati
 
 ## Angular observation
 
-The edge representation uses spherical harmonics
+The edge representation uses spherical harmonics:
 
-\[
-Y^{(l)}(\hat{\mathbf r}_{ij}).
-\]
+$$
+Y^{(l)}\left(\hat{\mathbf{r}}_{ij}\right)
+$$
 
 Experiments vary the angular bandwidth available to the network.
 
@@ -354,19 +354,19 @@ higher angular bandwidth configurations
 
 ## Hidden angular memory
 
-The current hidden representation is
+The current hidden representation is:
 
-\[
-32\times 0e + 16\times 1o.
-\]
+$$
+32\times 0e + 16\times 1o
+$$
 
-Future configurations retain higher-order representations inside the hidden state, including \(l=2\) and \(l=3\) channels.
+Future configurations retain higher-order representations inside the hidden state, including $l=2$ and $l=3$ channels.
 
-Example:
+For example:
 
-\[
-32\times0e + 16\times1o + 8\times2e.
-\]
+$$
+32\times 0e + 16\times 1o + 8\times 2e
+$$
 
 This tests whether the model currently observes angular information that it cannot preserve across layers.
 
@@ -376,7 +376,7 @@ Parameter-matched low-angular-order controls are included so improvements are no
 
 ## Radial perception
 
-Experiments vary:
+Experiments vary both cutoff radius and radial basis resolution.
 
 ### Cutoff radius
 
@@ -438,18 +438,18 @@ are included to distinguish genuine geometric effects from simple increases in m
 
 Global RMSE alone cannot answer whether adaptive computation is useful.
 
-For every validation atomic state \(i\) and architecture configuration \(k\), the study records
+For every validation atomic state $i$ and architecture configuration $k$, the study records:
 
-\[
-e_{ik}.
-\]
+$$
+e_{ik}
+$$
 
 States are aligned across models and include descriptors such as:
 
 - atomic species
-- \(|\mathbf v|\)
-- \(|\mathbf F|\)
-- \(\mathbf v\cdot\mathbf F\)
+- $|\mathbf{v}|$
+- $|\mathbf{F}|$
+- $\mathbf{v}\cdot\mathbf{F}$
 - coordination number
 - neighbor-distance statistics
 - local density
@@ -460,12 +460,11 @@ States are aligned across models and include descriptors such as:
 
 This allows direct comparison of which environments benefit from which geometric representations.
 
-For two configurations \(A\) and \(B\),
+For two configurations $A$ and $B$:
 
-\[
-\Delta_i =
-e_i^A-e_i^B.
-\]
+$$
+\Delta_i = e_i^A - e_i^B
+$$
 
 The central empirical question is therefore not merely:
 
@@ -487,21 +486,21 @@ If the perception study demonstrates state-dependent geometric requirements, the
 
 Conceptually:
 
-\[
+$$
 G_t
 \xrightarrow{C_\phi}
 \alpha_t
-\xrightarrow{}
+\rightarrow
 F_\theta(G_t;\alpha_t)
-\xrightarrow{}
-\Delta \mathbf r_t.
-\]
+\rightarrow
+\Delta \mathbf{r}_t
+$$
 
 Here:
 
-- \(C_\phi\) is a state-dependent **invariant controller**
-- \(F_\theta\) is a shared **O(3)-equivariant dynamics network**
-- \(\alpha_t\) controls how much geometric computation is allocated
+- $C_\phi$ is a state-dependent **invariant controller**
+- $F_\theta$ is a shared **O(3)-equivariant dynamics network**
+- $\alpha_t$ controls how much geometric computation is allocated
 
 This is deliberately different from using independent mixture-of-experts networks.
 
@@ -515,13 +514,13 @@ The controller changes the **effective computation**, rather than selecting an i
 
 One possible mechanism is dynamic weighting of angular channels:
 
-\[
+$$
 m_{ij}
 =
 \sum_l
 \alpha_i^{(l)}
-m_{ij}^{(l)}.
-\]
+m_{ij}^{(l)}
+$$
 
 Simple environments may rely primarily on low-order information, while strongly anisotropic or distorted environments may activate higher angular orders.
 
@@ -531,14 +530,14 @@ Simple environments may rely primarily on low-order information, while strongly 
 
 A maximum-radius graph can be constructed once.
 
-An invariant controller then applies smooth edge gates
+An invariant controller then applies smooth edge gates:
 
-\[
+$$
 m_i
 =
 \sum_j
-g_{ij}m_{ij}.
-\]
+g_{ij}m_{ij}
+$$
 
 This allows the effective interaction radius to change continuously without dynamically rebuilding the graph.
 
@@ -548,13 +547,13 @@ This allows the effective interaction radius to change continuously without dyna
 
 Residual message-passing blocks can be gated:
 
-\[
+$$
 h_i^{k+1}
 =
 h_i^k
 +
-\gamma_i^k F_k(h^k).
-\]
+\gamma_i^k F_k(h^k)
+$$
 
 Some environments may require deeper interaction propagation while others can be processed with fewer layers.
 
@@ -562,11 +561,11 @@ Some environments may require deeper interaction propagation while others can be
 
 ## Adaptive message allocation
 
-Individual edges or interaction channels can receive learned invariant weights
+Individual edges or interaction channels can receive learned invariant weights:
 
-\[
-\eta_{ij}.
-\]
+$$
+\eta_{ij}
+$$
 
 This allows the network to concentrate computation on locally important interactions.
 
@@ -576,25 +575,25 @@ This allows the network to concentrate computation on locally important interact
 
 The controller must not break the physical symmetry of the base network.
 
-For an orthogonal transformation \(Q\), the controller should satisfy
+For an orthogonal transformation $Q$, the controller should satisfy:
 
-\[
-C_\phi(QG)=C_\phi(G),
-\]
+$$
+C_\phi(QG)=C_\phi(G)
+$$
 
 while each geometric operator remains equivariant:
 
-\[
-F(QG)=QF(G).
-\]
+$$
+F(QG)=QF(G)
+$$
 
 Invariant scalar gating then preserves equivariance:
 
-\[
+$$
 \alpha(QG)F(QG)
 =
-Q[\alpha(G)F(G)].
-\]
+Q\left[\alpha(G)F(G)\right]
+$$
 
 Every candidate adaptive architecture will therefore be subjected to explicit numerical:
 
@@ -610,15 +609,15 @@ rather than assuming equivariance solely from implementation.
 
 The eventual controller can be optimized using both prediction quality and computational cost:
 
-\[
-\mathcal L
+$$
+\mathcal{L}
 =
-\mathcal L_{\mathrm{prediction}}
+\mathcal{L}_{\mathrm{prediction}}
 +
-\lambda C.
-\]
+\lambda C
+$$
 
-The compute term \(C\) can penalize expensive choices such as:
+The compute term $C$ can penalize expensive choices such as:
 
 - higher angular momentum channels
 - larger effective interaction radii
@@ -634,22 +633,22 @@ The intended objective is:
 
 # Oracle analysis before controller training
 
-Before training a controller, the fixed architecture experiments can define a statewise oracle
+Before training a controller, the fixed architecture experiments can define a statewise oracle:
 
-\[
+$$
 k_i^*(\lambda)
 =
-\arg\min_k
+\underset{k}{\arg\min}
 \left[
 e_{ik}+\lambda C_k
-\right].
-\]
+\right]
+$$
 
 This provides an upper-bound diagnostic for adaptive computation.
 
 If the oracle offers little benefit over the globally best model, adaptation is unlikely to justify its complexity.
 
-If the oracle shows a substantial accuracy–compute advantage, there is measurable opportunity for a learned controller.
+If the oracle shows a substantial accuracy-compute advantage, there is measurable opportunity for a learned controller.
 
 ---
 
@@ -699,21 +698,21 @@ The current benchmark represents only the first level of generalization.
 
 Future experiments will progressively increase difficulty.
 
-### G1 — unseen thermal trajectory
+## G1 — unseen thermal trajectory
 
 Current benchmark.
 
 Train and validation trajectories use different thermal initializations while material and loading families remain known.
 
-### G2 — unseen deformation magnitude
+## G2 — unseen deformation magnitude
 
 Hold out one or more strain magnitudes during training.
 
-### G3 — unseen loading direction or mode
+## G3 — unseen loading direction or mode
 
 Train on a subset of loading modes and evaluate on unseen deformation directions.
 
-### G4 — unseen thermodynamic / loading conditions
+## G4 — unseen thermodynamic or loading conditions
 
 Examples include:
 
@@ -723,11 +722,11 @@ Examples include:
 - pressure
 - orientation
 
-### G5 — unseen material
+## G5 — unseen material
 
 Train on multiple crystalline materials and evaluate on structures or compositions excluded from training.
 
-### G6 — unseen material families
+## G6 — unseen material families
 
 Evaluate extrapolation to compositions and structural families that differ substantially from the training distribution.
 
@@ -741,37 +740,37 @@ Each sample will maintain a consistent state schema so the model does not depend
 
 A future dataset may include:
 
-\[
-\{
+$$
+\left\{
 Z,
-\mathbf r,
-\mathbf v,
-\mathbf F,
+\mathbf{r},
+\mathbf{v},
+\mathbf{F},
 H,
 T,
 \text{loading history},
 \text{material metadata}
-\}.
-\]
+\right\}
+$$
 
 The architecture will then be evaluated for both interpolation and deliberate out-of-distribution transfer.
 
 ---
 
-# Material–material interactions
+# Material-material interactions
 
 A longer-term objective is modeling interactions between separate material bodies.
 
-The system state can be represented as
+The system state can be represented as:
 
-\[
+$$
 S =
 S_A
 +
 S_B
 +
-\text{relative interaction conditions}.
-\]
+\text{relative interaction conditions}
+$$
 
 Potential global features include:
 
@@ -782,19 +781,19 @@ Potential global features include:
 - temperature
 - loading history
 
-A particularly strong transfer experiment would train on combinations such as
+A particularly strong transfer experiment would train on combinations such as:
 
 ```text
-A–A
-A–C
-B–B
-B–C
+A-A
+A-C
+B-B
+B-C
 ```
 
 and evaluate on an unseen interaction:
 
 ```text
-A–B
+A-B
 ```
 
 This tests compositional generalization rather than memorization of known pairings.
@@ -816,7 +815,7 @@ Metrics will include:
 - coordination-number evolution
 - structural statistics
 - thermodynamic quantities where applicable
-- failure / divergence rate
+- failure or divergence rate
 
 Long-horizon atom-by-atom correspondence alone is not sufficient because atomistic dynamics can be chaotic.
 
@@ -828,9 +827,9 @@ The objective is therefore both trajectory fidelity and preservation of physical
 
 The strongest current state representation includes the true instantaneous MD force:
 
-\[
-(Z,\mathbf v,\mathbf F).
-\]
+$$
+(Z,\mathbf{v},\mathbf{F})
+$$
 
 This makes the current state-C architecture useful as:
 
@@ -842,19 +841,19 @@ but it is not yet a fully autonomous force-free simulator.
 
 Future work will therefore also study:
 
-### State B
+## State B
 
-\[
-(Z,\mathbf v)
-\]
+$$
+(Z,\mathbf{v})
+$$
 
 which removes explicit force input.
 
-### Force prediction
+## Force prediction
 
 Predicting forces or accelerations jointly with state evolution.
 
-### Hybrid simulation
+## Hybrid simulation
 
 Coupling a learned transition model with an external force calculator.
 
@@ -899,7 +898,7 @@ The project aims to maintain:
 - aligned per-state error files
 - runtime and memory measurements
 - dataset provenance
-- software/environment metadata
+- software and environment metadata
 
 Current fixed model-training seeds are:
 
@@ -958,7 +957,7 @@ These are distinct from molecular-dynamics trajectory seeds.
 ## Phase 4 — Interaction and impact systems
 
 - [ ] construct multi-body atomistic states
-- [ ] generate material–material interaction trajectories
+- [ ] generate material-material interaction trajectories
 - [ ] test held-out material pairings
 - [ ] study extreme transient loading
 - [ ] evaluate transfer across interaction geometry and conditions
@@ -971,7 +970,7 @@ The eventual goal is a transferable atomistic dynamics framework capable of lear
 
 Conceptually:
 
-\[
+$$
 \boxed{
 \text{material state}
 +
@@ -979,17 +978,17 @@ Conceptually:
 \rightarrow
 \text{future atomistic response}
 }
-\]
+$$
 
 Rather than building a separate model for every material or experiment, the project investigates whether a shared equivariant architecture can learn reusable dynamical structure across heterogeneous physical systems.
 
 The central architectural hypothesis is:
 
-\[
+$$
 \boxed{
-\text{geometric computation should adapt to the local physical state}
+\text{Geometric computation should adapt to the local physical state}
 }
-\]
+$$
 
 rather than remaining globally fixed for every atom, at every timestep, in every material.
 
@@ -1030,4 +1029,4 @@ The next stage is therefore not simply increasing model size.
 
 It is determining:
 
-> **what geometric information is necessary, for which atomic states, and whether a model can learn to allocate that computation automatically.**
+> **What geometric information is necessary, for which atomic states, and whether a model can learn to allocate that computation automatically?**
